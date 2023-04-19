@@ -19,8 +19,8 @@ return new class extends Migration
             $table->text('description');
             $table->boolean('is_published')->default(0);
             $table->unsignedBigInteger('quantity')->default(0);
-            $table->decimal('price', 10, 2)->nullable();
-            $table->decimal('old_price', 10, 2)->nullable();
+            $table->unsignedDecimal('price', 10, 2)->nullable();
+            $table->unsignedDecimal('old_price', 10, 2)->nullable();
             $table->json('images')->nullable();
             $table->timestamps();
         });

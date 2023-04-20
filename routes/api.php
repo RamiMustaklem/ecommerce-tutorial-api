@@ -20,9 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // /api/admin/...
-Route::prefix('admin')->middleware([])->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
     Route::apiResources([
-        // products
         'products' => ProductController::class,
         // categories
         // customers

@@ -13,5 +13,6 @@ class Product extends Model
 
     protected $casts = [
         'images' => 'array',
+        'is_published' => 'boolean',
     ];
 }

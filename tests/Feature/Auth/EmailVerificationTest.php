@@ -32,7 +32,7 @@ class EmailVerificationTest extends TestCase
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(config('app.frontend_url').RouteServiceProvider::HOME.'?verified=1');
+        $response->assertRedirect(config('app.frontend_url') . RouteServiceProvider::HOME . '?verified=1');
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void
@@ -50,5 +50,22 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_user_is_redirected_if_email_is_already_verified(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now()->subDay(),
+        ]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->actingAs($user)->get($verificationUrl);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(config('app.frontend_url') . RouteServiceProvider::HOME . '?verified=1');
     }
 }

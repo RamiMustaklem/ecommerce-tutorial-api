@@ -44,4 +44,25 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_invalid_email_provided(): void
+    {
+        $response = $this->postJson('/forgot-password', ['email' => 'none-existing@email.com']);
+
+        $response->assertUnprocessable();
+    }
+
+    public function test_invalid_reset_password(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->postJson('/reset-password', [
+            'email' => $user->email,
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'token' => 'password',
+        ]);
+
+        $response->assertUnprocessable();
+    }
 }

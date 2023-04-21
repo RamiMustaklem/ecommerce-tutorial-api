@@ -21,7 +21,7 @@ class ProductAdminApiTest extends TestCase
         parent::setUp();
 
         $user = User::factory()->create();
-        $this->actingAs($user, 'sanctum');
+        $this->actingAs($user);
     }
 
     public function test_index(): void
@@ -52,7 +52,7 @@ class ProductAdminApiTest extends TestCase
                         $json->where('id', $first_product->id)
                             ->where('name', $first_product->name)
                             ->where('slug', $first_product->slug)
-                            // ->missing('excerpt')
+                            ->missing('excerpt')
                             // ->missing('images')
                             ->etc()
                     )
@@ -182,6 +182,7 @@ class ProductAdminApiTest extends TestCase
         $response->assertSuccessful();
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        $this->assertModelMissing($product);
     }
 
     public function test_destroy_404(): void

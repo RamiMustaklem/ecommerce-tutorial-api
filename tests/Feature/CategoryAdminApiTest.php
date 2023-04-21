@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CategoryAdminApiTest extends TestCase
@@ -20,7 +21,7 @@ class CategoryAdminApiTest extends TestCase
         parent::setUp();
 
         $user = User::factory()->create();
-        $this->actingAs($user, 'sanctum');
+        $this->actingAs($user);
     }
 
     public function test_index(): void
@@ -58,5 +59,131 @@ class CategoryAdminApiTest extends TestCase
             );
 
         $response->assertOk(200);
+    }
+
+    public function test_store_successfully(): void
+    {
+        $category = [
+            'name' => $name = fake()->sentence,
+            'slug' => $slug = Str::slug($name),
+            'description' => fake()->paragraphs(1, true),
+        ];
+
+        $response = $this->postJson($this->baseUrl, $category);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('categories', $category);
+    }
+
+    public function test_store_validation_errors(): void
+    {
+        $response = $this->postJson($this->baseUrl, [
+            'name' => $name = fake()->sentence,
+            'slug' => Str::slug($name),
+        ]);
+
+        $response->assertInvalid([
+            'description' => 'The description field is required.',
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    public function test_show(): void
+    {
+        $category = Category::factory()->create();
+
+        $response = $this->getJson($this->baseUrl . '/' . $category->id);
+
+        $response
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->has(
+                    'data',
+                    fn (AssertableJson $json) =>
+                    $json->where('id', $category->id)
+                        ->where('name', $category->name)
+                        ->where('slug', $category->slug)
+                        ->etc()
+                )
+                    ->where('data.id', $category->id)
+                    ->where('data.name', $category->name)
+                    ->where('data.slug', $category->slug)
+            );
+
+        $response->assertOk();
+    }
+
+    public function test_show_404(): void
+    {
+        $this->assertDatabaseEmpty('categories');
+
+        $response = $this->getJson($this->baseUrl . '/' . 100);
+
+        $response->assertNotFound();
+    }
+
+    public function test_update_successfully(): void
+    {
+        $category = Category::factory()->create(['description' => 'mock category description']);
+
+        $this->assertDatabaseHas('categories', ['slug' => $category->slug, 'description' => 'mock category description']);
+
+        $response = $this->putJson($this->baseUrl . '/' . $category->id, [
+            'description' => 'mock category description updated',
+        ]);
+
+        $this->assertDatabaseHas('categories', ['slug' => $category->slug, 'description' => 'mock category description updated']);
+
+        $response
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->has('data')
+                    ->where('data.id', $category->id)
+                    ->where('data.name', $category->name)
+                    ->where('data.slug', $category->slug)
+                    ->where('data.description', 'mock category description updated')
+            );
+
+        $response->assertOk();
+    }
+
+    public function test_update_validation_errors(): void
+    {
+        $category = Category::factory()->create();
+
+        $response = $this->putJson($this->baseUrl . '/' . $category->id, [
+            'description' => null,
+        ]);
+
+        $response->assertInvalid([
+            'description' => 'The description field must be a string.',
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    public function test_destroy(): void
+    {
+        $category = Category::factory()->create();
+
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+
+        $response = $this->deleteJson($this->baseUrl . '/' . $category->id);
+
+        $response->assertSuccessful();
+
+        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+        $this->assertModelMissing($category);
+    }
+
+    public function test_destroy_404(): void
+    {
+        $this->assertDatabaseEmpty('categories');
+
+        $response = $this->deleteJson($this->baseUrl . '/' . 100);
+
+        $response->assertNotFound();
     }
 }

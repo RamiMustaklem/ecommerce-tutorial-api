@@ -27,5 +27,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         'products' => ProductController::class,
         'categories' => CategoryController::class,
         // customers
+        // orders
     ]);
 });

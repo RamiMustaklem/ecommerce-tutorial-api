@@ -19,7 +19,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        \App\Models\Product::factory(20)->create();
-        \App\Models\Category::factory(5)->create();
+        $products = \App\Models\Product::factory(20)->create();
+        $categories = \App\Models\Category::factory(5)->create();
+
+        $products->each(function ($product) use ($categories) {
+            $randCategories = $categories->random(rand(0, 3))->pluck('id');
+            $product->categories()->attach($randCategories);
+        });
     }
 }

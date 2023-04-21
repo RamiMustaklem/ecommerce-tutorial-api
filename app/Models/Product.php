@@ -17,6 +17,11 @@ class Product extends Model
         'is_published' => 'boolean',
     ];
 
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
+    }
+
     public function scopeIsPublished(Builder $query, bool $isPublished = true): void
     {
         $query->where('is_published', $isPublished);

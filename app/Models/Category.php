@@ -14,4 +14,9 @@ class Category extends Model
     protected $casts = [
         'image' => 'array',
     ];
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class);
+    }
 }

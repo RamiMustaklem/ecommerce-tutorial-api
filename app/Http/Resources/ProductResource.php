@@ -25,6 +25,7 @@ class ProductResource extends JsonResource
             'price' => $this->price,
             'old_price' => $this->whenNotNull($this->old_price),
             'images' => $this->whenNotNull($this->images),
+            'categories' => CategoryResource::collection($this->whenLoaded('categories')),
         ];
     }
 }

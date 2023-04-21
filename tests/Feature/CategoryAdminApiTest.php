@@ -52,6 +52,7 @@ class CategoryAdminApiTest extends TestCase
                         $json->where('id', $first_category->id)
                             ->where('name', $first_category->name)
                             ->where('slug', $first_category->slug)
+                            ->has('products')
                             // ->missing('images')
                             ->etc()
                     )

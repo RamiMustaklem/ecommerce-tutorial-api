@@ -26,5 +26,7 @@ class DatabaseSeeder extends Seeder
             $randCategories = $categories->random(rand(0, 3))->pluck('id');
             $product->categories()->attach($randCategories);
         });
+
+        \App\Models\Customer::factory(50)->create();
     }
 }

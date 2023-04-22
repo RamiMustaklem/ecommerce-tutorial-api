@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::apiResources([
         'products' => ProductController::class,
         'categories' => CategoryController::class,
-        // customers
+        'customers' => CustomerController::class,
         // orders
     ]);
 });

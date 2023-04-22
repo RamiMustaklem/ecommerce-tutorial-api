@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CustomerGender;
+use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreCustomerRequest extends FormRequest
 {
@@ -11,7 +15,7 @@ class StoreCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +26,29 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:' . Customer::class,
+            ],
+            // 'password' => [
+            //     'required',
+            //     'confirmed',
+            //     Rules\Password::defaults(),
+            // ],
+            'phone' => [
+                'required',
+                'numeric',
+                'unique:' . Customer::class,
+            ],
+            'gender' => [
+                'required',
+                new Enum(CustomerGender::class),
+            ],
+            'dob' => ['required', 'date'],
         ];
     }
 }

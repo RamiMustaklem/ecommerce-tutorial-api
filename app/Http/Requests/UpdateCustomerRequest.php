@@ -2,7 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CustomerGender;
+use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateCustomerRequest extends FormRequest
 {
@@ -11,7 +16,7 @@ class UpdateCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +27,23 @@ class UpdateCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['string', 'max:255'],
+            'email' => [
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('customers')->ignore($this->id),
+            ],
+            // 'password' => [
+            //     'confirmed',
+            //     Rules\Password::defaults(),
+            // ],
+            'phone' => [
+                'numeric',
+                Rule::unique('customers')->ignore($this->id),
+            ],
+            'gender' => [new Enum(CustomerGender::class)],
+            'dob' => ['date'],
         ];
     }
 }

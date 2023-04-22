@@ -30,4 +30,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         'customers' => CustomerController::class,
         // orders
     ]);
+
+    Route::put('customers/{id}/restore', [CustomerController::class, 'restore']);
 });

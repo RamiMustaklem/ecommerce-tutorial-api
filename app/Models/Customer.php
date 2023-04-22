@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CustomerGender;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -35,4 +36,24 @@ class Customer extends Authenticatable
         'photo' => 'array',
         'gender' => CustomerGender::class,
     ];
+
+    /**
+     * Interact with the customer's email.
+     */
+    protected function email(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value) => strtolower($value),
+        );
+    }
+
+    /**
+     * Interact with the customer's password.
+     */
+    protected function password(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value) => bcrypt($value),
+        );
+    }
 }

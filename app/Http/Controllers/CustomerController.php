@@ -22,7 +22,9 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        //
+        $customer = Customer::create($request->validated());
+
+        return new CustomerResource($customer);
     }
 
     /**
@@ -30,7 +32,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        //
+        return new CustomerResource($customer);
     }
 
     /**
@@ -38,7 +40,9 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        $customer->update($request->validated());
+
+        return new CustomerResource($customer);
     }
 
     /**
@@ -46,6 +50,15 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        //
+        return $customer->delete();
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(int $id)
+    {
+        $customer = Customer::withTrashed()->findOrFail($id);
+        return $customer->restore();
     }
 }

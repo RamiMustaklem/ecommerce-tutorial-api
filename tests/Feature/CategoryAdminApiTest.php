@@ -59,7 +59,7 @@ class CategoryAdminApiTest extends TestCase
                     ->etc()
             );
 
-        $response->assertOk(200);
+        $response->assertOk();
     }
 
     public function test_store_successfully(): void

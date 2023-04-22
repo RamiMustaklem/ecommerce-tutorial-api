@@ -21,11 +21,11 @@ class CustomerFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->phoneNumber(),
+            'phone' => fake()->unique()->e164PhoneNumber(),
             'dob' => fake()->dateTimeBetween('-35 years', '-18 years'),
             'gender' => fake()->randomElement(CustomerGender::getAllValues()),
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'password' => 'password',
             'remember_token' => Str::random(10),
         ];
     }

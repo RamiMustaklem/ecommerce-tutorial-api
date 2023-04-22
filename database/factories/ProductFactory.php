@@ -18,9 +18,9 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $name = fake()->sentence,
+            'name' => $name = fake()->unique()->catchPhrase(),
             'slug' => Str::slug($name),
-            'description' => fake()->paragraphs(4, true),
+            'description' => fake()->realText(),
             'is_published' => fake()->boolean(),
             'quantity' => fake()->numberBetween(5, 50),
             'price' => $price = fake()->randomFloat(2, 45, 199),

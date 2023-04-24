@@ -6,6 +6,8 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -25,7 +27,37 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $order = Order::create($request->validated());
+        $order = DB::transaction(function () use ($request) {
+            $product_ids = $request->collect('order_products');
+
+            $products = Product::whereIn(
+                'id',
+                $product_ids->pluck('product_id')
+            )->get();
+
+            $orderProducts = $product_ids->mapWithKeys(function (array $item) use ($products) {
+                return [
+                    $item['product_id'] => [
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $products
+                            ->firstWhere('id', $item['product_id'])
+                            ->price,
+                    ]
+                ];
+            });
+
+            $orderTotal = $orderProducts->reduce(function (int $carry, array $value) {
+                return $carry + ($value['quantity'] * $value['unit_price']);
+            }, 0);
+
+            $request->merge(['total_price' => $orderTotal]);
+
+            $order = Order::create($request->validated());
+
+            $order->products()->attach($orderProducts->toArray());
+
+            return $order;
+        });
 
         return new OrderResource($order);
     }
@@ -45,7 +77,35 @@ class OrderController extends Controller
      */
     public function update(UpdateOrderRequest $request, Order $order)
     {
-        $order->update($request->validated());
+        DB::transaction(function () use ($request, $order) {
+            $product_ids = $request->collect('order_products');
+
+            $products = Product::whereIn(
+                'id',
+                $product_ids->pluck('product_id')
+            )->get();
+
+            $orderProducts = $product_ids->mapWithKeys(function (array $item) use ($products) {
+                return [
+                    $item['product_id'] => [
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $products
+                            ->firstWhere('id', $item['product_id'])
+                            ->price,
+                    ]
+                ];
+            });
+
+            $orderTotal = $orderProducts->reduce(function (int $carry, array $value) {
+                return $carry + ($value['quantity'] * $value['unit_price']);
+            }, 0);
+
+            $request->merge(['total_price' => $orderTotal]);
+
+            $order->update($request->validated());
+
+            $order->products()->sync($orderProducts->toArray());
+        });
 
         return new OrderResource($order);
     }

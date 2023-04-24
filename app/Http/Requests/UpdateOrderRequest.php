@@ -28,6 +28,13 @@ class UpdateOrderRequest extends FormRequest
             'notes' => ['string', 'nullable'],
             'total_price' => ['decimal:0,2', 'min:0'],
             'status' => ['required', new Enum(OrderStatus::class)],
+            'order_products' => ['array', 'min:1', 'exclude'],
+            'order_products.*.product_id' => [
+                'required', 'integer', 'exists:products,id',
+            ],
+            'order_products.*.quantity' => [
+                'required', 'integer', 'min:1',
+            ],
         ];
     }
 }

@@ -123,14 +123,27 @@ class OrderAdminApiTest extends TestCase
     {
         $customer = Customer::factory()->create();
 
+        $products = Product::factory()->count(2)->create();
+
+        $order_products = $products->map(
+            fn ($product) => ['quantity' => 1, 'product_id' => $product->id]
+        )->toArray();
+
         $order = [
             'customer_id' => $customer->id,
             'total_price' => fake()->randomFloat(2, 100, 200),
         ];
 
-        $response = $this->postJson($this->baseUrl, $order);
+        $response = $this->postJson($this->baseUrl, [
+            ...$order,
+            'order_products' => $order_products,
+        ]);
 
         $response->assertCreated();
+
+        $created = $response->json('data');
+        $uuid = $created['uuid'];
+        $total_price = $created['total_price'];
 
         $response->assertJson(
             fn (AssertableJson $json) => $json->has(
@@ -148,7 +161,9 @@ class OrderAdminApiTest extends TestCase
             'orders',
             [
                 ...$order,
-                'status' => OrderStatus::NEW->value
+                'status' => OrderStatus::NEW->value,
+                'uuid' => $uuid,
+                'total_price' => $total_price,
             ]
         );
     }
@@ -225,6 +240,12 @@ class OrderAdminApiTest extends TestCase
     {
         $customer = Customer::factory()->create();
 
+        $products = Product::factory()->count(2)->create();
+
+        $order_products = $products->map(
+            fn ($product) => ['quantity' => 1, 'product_id' => $product->id]
+        )->toArray();
+
         $order = Order::factory()->create([
             'status' => OrderStatus::NEW->value,
             'customer_id' => $customer->id,
@@ -242,7 +263,11 @@ class OrderAdminApiTest extends TestCase
         $response = $this->putJson($this->baseUrl . '/' . $order->id, [
             'notes' => 'notes updated',
             'status' => OrderStatus::PROCESSING->value,
+            'order_products' => $order_products,
         ]);
+
+        $created = $response->json('data');
+        $total_price = $created['total_price'];
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
@@ -250,6 +275,7 @@ class OrderAdminApiTest extends TestCase
             'status' => OrderStatus::PROCESSING->value,
             'notes' => 'notes updated',
             'customer_id' => $customer->id,
+            'total_price' => $total_price,
         ]);
 
         $response

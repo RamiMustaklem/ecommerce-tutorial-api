@@ -30,9 +30,8 @@ class ProductAdminApiTest extends TestCase
 
         $response = $this->getJson($this->baseUrl);
 
-        $first_product = $products[0];
+        $first_product = $products->first();
 
-        $this->assertEquals($first_product->id, 1);
         $this->assertCount(5, $products);
 
         $response

@@ -6,7 +6,6 @@ use App\Enums\CustomerGender;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
@@ -30,9 +29,9 @@ class CustomerAdminApiTest extends TestCase
 
         $response = $this->getJson($this->baseUrl);
 
-        $first_customer = $customers[0];
+        $customer = $customers->first();
 
-        $this->assertEquals($first_customer->id, 1);
+        $this->assertEquals($customer->id, 1);
         $this->assertCount(5, $customers);
 
         $response
@@ -49,13 +48,15 @@ class CustomerAdminApiTest extends TestCase
                     ->has(
                         'data.0',
                         fn (AssertableJson $json) =>
-                        $json->where('id', $first_customer->id)
-                            ->where('name', $first_customer->name)
-                            ->where('email', $first_customer->email)
-                            ->where('phone', $first_customer->phone)
-                            ->where('gender', $first_customer->gender->value)
-                            ->where('dob', $first_customer->dob->toISOString())
+                        $json->where('id', $customer->id)
+                            ->where('name', $customer->name)
+                            ->where('email', $customer->email)
+                            ->where('phone', $customer->phone)
+                            ->where('gender', $customer->gender->value)
+                            ->where('dob', $customer->dob->toISOString())
                             ->missing('photo')
+                            ->missing('password')
+                            ->has('orders')
                     )
                     ->etc()
             );
@@ -111,11 +112,9 @@ class CustomerAdminApiTest extends TestCase
                     $json->where('id', $customer->id)
                         ->where('name', $customer->name)
                         ->where('email', $customer->email)
+                        ->has('orders')
                         ->etc()
                 )
-                    ->where('data.id', $customer->id)
-                    ->where('data.name', $customer->name)
-                    ->where('data.email', $customer->email)
             );
 
         $response->assertOk();

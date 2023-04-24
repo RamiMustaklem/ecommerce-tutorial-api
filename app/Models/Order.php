@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\OrderStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+
+class Order extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'uuid', 'total_price', 'status', 'notes', 'customer_id',
+    ];
+
+    public $casts = [
+        'status' => OrderStatus::class,
+        'total_price' => 'decimal:2',
+        'uuid' => 'string',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Order $order) {
+            $order->uuid = Str::orderedUuid();
+            $order->status = OrderStatus::NEW->value;
+        });
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+}

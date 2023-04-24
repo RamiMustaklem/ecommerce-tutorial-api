@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -28,8 +29,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         'products' => ProductController::class,
         'categories' => CategoryController::class,
         'customers' => CustomerController::class,
-        // orders
+        'orders' => OrderController::class,
     ]);
 
     Route::put('customers/{id}/restore', [CustomerController::class, 'restore']);
+    Route::put('orders/{id}/restore', [OrderController::class, 'restore']);
 });

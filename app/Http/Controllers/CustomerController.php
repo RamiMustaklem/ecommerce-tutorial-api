@@ -14,7 +14,9 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        return CustomerResource::collection(Customer::paginate());
+        return CustomerResource::collection(
+            Customer::with('orders')->paginate()
+        );
     }
 
     /**
@@ -32,6 +34,8 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
+        $customer->load('orders');
+
         return new CustomerResource($customer);
     }
 

@@ -22,6 +22,9 @@ class CustomerResource extends JsonResource
             'gender' => $this->gender,
             'dob' => $this->dob,
             'photo' => $this->whenNotNull($this->photo),
+            'orders' => OrderResource::collection(
+                $this->whenLoaded('orders')
+            ),
         ];
     }
 }

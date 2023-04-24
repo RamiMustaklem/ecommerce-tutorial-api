@@ -15,8 +15,8 @@ class Product extends Model
     protected $casts = [
         'images' => 'array',
         'is_published' => 'boolean',
-        'price' => 'float',
-        'old_price' => 'float',
+        'price' => 'decimal:2',
+        'old_price' => 'decimal:2',
     ];
 
     public function categories()

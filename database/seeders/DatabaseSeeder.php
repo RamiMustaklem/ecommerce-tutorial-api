@@ -27,6 +27,10 @@ class DatabaseSeeder extends Seeder
             $product->categories()->attach($randCategories);
         });
 
-        \App\Models\Customer::factory(50)->create();
+        $customers = \App\Models\Customer::factory(50)->create();
+
+        \App\Models\Order::factory(150)
+            ->state(fn () => ['customer_id' => $customers->random()->id])
+            ->create();
     }
 }

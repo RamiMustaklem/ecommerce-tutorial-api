@@ -26,6 +26,14 @@ class ProductResource extends JsonResource
             'old_price' => $this->whenNotNull($this->old_price),
             'images' => $this->whenNotNull($this->images),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
+            'orders' => OrderResource::collection($this->whenLoaded('orders')),
+            'order_product' => $this->whenPivotLoaded('order_product', function () {
+                return [
+                    'quantity' => $this->pivot->quantity,
+                    'unit_price' => $this->pivot->unit_price,
+                ];
+            }),
+            'orders_count' => $this->whenNotNull($this->orders_count),
         ];
     }
 }

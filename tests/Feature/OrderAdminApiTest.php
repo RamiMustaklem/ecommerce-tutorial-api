@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,7 +28,38 @@ class OrderAdminApiTest extends TestCase
 
     public function test_index(): void
     {
-        $orders = Order::factory()->count(5)->create();
+        $products = Product::factory()->count(rand(3, 5))->create();
+
+        $orders = Order::factory()
+            ->count(5)
+            ->create();
+
+        $orders->each(function ($order) use ($products) {
+
+            $orderProducts = $products->where('quantity', '>', 0)
+                ->random(rand(1, 3))
+                ->mapWithKeys(function (Product $item) {
+
+                    $itemQuantity = $item->quantity > 5
+                        ? rand(1, 3)
+                        : rand(1, $item->quantity);
+
+                    return [
+                        $item->id => [
+                            'quantity' => $itemQuantity,
+                            'unit_price' => $item->price,
+                        ]
+                    ];
+                });
+
+            $order->products()->attach($orderProducts->toArray());
+
+            $orderTotal = $orderProducts->reduce(function (int $carry, array $value) {
+                return $carry + ($value['quantity'] * $value['unit_price']);
+            }, 0);
+
+            $order->update(['total_price' => $orderTotal]);
+        });
 
         $this->assertCount(5, $orders);
 
@@ -36,6 +68,10 @@ class OrderAdminApiTest extends TestCase
         $order = $orders->first();
 
         $customer = DB::table('customers')->find($order->customer_id);
+
+        $order_products_pivot = DB::table('order_product')
+            ->where('order_id', $order->id)
+            ->get();
 
         $response
             ->assertJson(
@@ -65,6 +101,16 @@ class OrderAdminApiTest extends TestCase
                                     ->where('email', $customer->email)
                                     ->missing('password')
                                     ->etc()
+                            )
+                            ->has('products', count($order_products_pivot))
+                            ->where(
+                                'total_price',
+                                number_format(
+                                    $order_products_pivot->reduce(function (int $carry, $value) {
+                                        return $carry + ($value->quantity * $value->unit_price);
+                                    }, 0),
+                                    2
+                                )
                             )
                     )
                     ->etc()
@@ -122,7 +168,26 @@ class OrderAdminApiTest extends TestCase
 
     public function test_show(): void
     {
+        $products = Product::factory()->count(2)->create(['quantity' => 10]);
+
         $order = Order::factory()->create();
+
+        $orderProducts = $products->mapWithKeys(function (Product $item) {
+            return [
+                $item->id => [
+                    'quantity' => rand(1, 3),
+                    'unit_price' => $item->price,
+                ]
+            ];
+        });
+
+        $order->products()->attach($orderProducts->toArray());
+
+        $orderTotal = $orderProducts->reduce(function (int $carry, array $value) {
+            return $carry + ($value['quantity'] * $value['unit_price']);
+        }, 0);
+
+        $order->update(['total_price' => $orderTotal]);
 
         $response = $this->getJson($this->baseUrl . '/' . $order->id);
 
@@ -136,7 +201,10 @@ class OrderAdminApiTest extends TestCase
                         ->where('status', $order->status->value)
                         ->where('customer_id', $order->customer_id)
                         ->where('uuid', $order->uuid)
+                        ->where('total_price', $order->total_price)
                         ->has('customer')
+                        ->has('products', $products->count())
+                        ->where('total_price', number_format($orderTotal, 2))
                         ->etc()
                 )
             );

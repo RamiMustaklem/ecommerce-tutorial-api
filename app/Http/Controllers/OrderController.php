@@ -15,7 +15,8 @@ class OrderController extends Controller
     public function index()
     {
         return OrderResource::collection(
-            Order::with('customer')->paginate()
+            Order::with(['customer', 'products'])
+                ->paginate()
         );
     }
 
@@ -34,7 +35,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load('customer');
+        $order->load(['customer', 'products']);
 
         return new OrderResource($order);
     }

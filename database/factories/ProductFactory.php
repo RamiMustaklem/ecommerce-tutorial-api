@@ -24,7 +24,7 @@ class ProductFactory extends Factory
             'is_published' => fake()->boolean(),
             'quantity' => fake()->numberBetween(5, 50),
             'price' => $price = fake()->randomFloat(2, 45, 199),
-            'old_price' => $price - ($price * 0.10),
+            'old_price' => $price + ($price * 0.10),
             'images' => json_encode([[
                 'id' => 1,
                 'original' => fake()->imageUrl(640, 480, 'animals', true, 'dogs', false, 'jpg'),

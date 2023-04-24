@@ -6,7 +6,6 @@ use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -16,7 +15,7 @@ class ProductController extends Controller
     public function index()
     {
         return ProductResource::collection(
-            Product::with('categories')
+            Product::with(['categories'])
                 ->paginate()
         );
     }

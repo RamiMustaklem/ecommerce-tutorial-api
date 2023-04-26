@@ -21,6 +21,7 @@ class OrderResource extends JsonResource
             'total_price' => $this->total_price,
             'status' => $this->status,
             'notes' => $this->whenNotNull($this->notes),
+            'address' => $this->address,
             'customer' => new CustomerResource(
                 $this->whenLoaded('customer')
             ),

@@ -93,6 +93,7 @@ class OrderAdminApiTest extends TestCase
                             ->where('total_price', $order->total_price)
                             ->where('status', $order->status->value)
                             ->where('notes', $order->notes)
+                            ->where('address', $order->address)
                             ->has(
                                 'customer',
                                 fn (AssertableJson $json) =>
@@ -129,9 +130,15 @@ class OrderAdminApiTest extends TestCase
             fn ($product) => ['quantity' => 1, 'product_id' => $product->id]
         )->toArray();
 
+        $address = [
+            'city' => fake()->city,
+            'street_address' => fake()->streetAddress,
+        ];
+
         $order = [
             'customer_id' => $customer->id,
             'total_price' => fake()->randomFloat(2, 100, 200),
+            'address' => $address,
         ];
 
         $response = $this->postJson($this->baseUrl, [
@@ -160,7 +167,8 @@ class OrderAdminApiTest extends TestCase
         $this->assertDatabaseHas(
             'orders',
             [
-                ...$order,
+                'customer_id' => $order['customer_id'],
+                'total_price' => $order['total_price'],
                 'status' => OrderStatus::NEW->value,
                 'uuid' => $uuid,
                 'total_price' => $total_price,

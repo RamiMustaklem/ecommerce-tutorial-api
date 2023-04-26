@@ -21,7 +21,8 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->unsignedDecimal('total_price', 12, 2)->nullable();
             $table->string('status')->default(OrderStatus::NEW->value);
-            $table->text('notes')->nullable();
+            $table->string('notes')->nullable();
+            $table->json('address')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

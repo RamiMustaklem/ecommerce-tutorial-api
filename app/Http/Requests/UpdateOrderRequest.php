@@ -24,8 +24,9 @@ class UpdateOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['exclude', 'missing'],
-            'notes' => ['string', 'nullable'],
+            'customer_id' => ['missing', 'exclude'],
+            'notes' => ['string', 'max:255', 'nullable'],
+            'address' => ['array:street_address,city'],
             'total_price' => ['decimal:0,2', 'min:0'],
             'status' => ['required', new Enum(OrderStatus::class)],
             'order_products' => ['array', 'min:1', 'exclude'],

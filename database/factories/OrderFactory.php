@@ -25,6 +25,10 @@ class OrderFactory extends Factory
             'total_price' => fake()->randomFloat(2, 50, 500),
             'status' => fake()->randomElement(OrderStatus::getAllValues()),
             'notes' => fake()->realText(100),
+            'address' => json_encode([
+                'street_address' => fake()->streetAddress,
+                'city' => fake()->city,
+            ]),
         ];
     }
 }

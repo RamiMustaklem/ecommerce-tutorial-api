@@ -16,13 +16,14 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'uuid', 'total_price', 'status', 'notes', 'customer_id',
+        'uuid', 'total_price', 'status', 'notes', 'customer_id', 'address',
     ];
 
     public $casts = [
         'status' => OrderStatus::class,
         'total_price' => 'decimal:2',
         'uuid' => 'string',
+        'address' => 'array',
     ];
 
     protected static function booted(): void

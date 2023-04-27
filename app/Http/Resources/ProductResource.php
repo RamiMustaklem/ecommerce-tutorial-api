@@ -24,7 +24,6 @@ class ProductResource extends JsonResource
             'quantity' => $this->quantity,
             'price' => $this->price,
             'old_price' => $this->whenNotNull($this->old_price),
-            'images' => $this->whenNotNull($this->images),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'orders' => OrderResource::collection($this->whenLoaded('orders')),
             'order_product' => $this->whenPivotLoaded('order_product', function () {
@@ -34,6 +33,7 @@ class ProductResource extends JsonResource
                 ];
             }),
             'orders_count' => $this->whenNotNull($this->orders_count),
+            'media' => MediaResource::collection($this->whenLoaded('media')),
         ];
     }
 }

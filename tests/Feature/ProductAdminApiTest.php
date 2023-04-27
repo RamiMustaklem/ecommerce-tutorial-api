@@ -6,7 +6,6 @@ use App\Models\Attachment;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -56,7 +55,7 @@ class ProductAdminApiTest extends TestCase
                             ->where('slug', $first_product->slug)
                             ->missing('excerpt')
                             ->has('categories')
-                            // ->missing('images')
+                            ->missing('media')
                             ->etc()
                     )
                     ->etc()
@@ -231,7 +230,7 @@ class ProductAdminApiTest extends TestCase
             'description' => fake()->paragraphs(1, true),
             'is_published' => fake()->boolean(),
             'quantity' => fake()->randomNumber(1),
-            'price' => fake()->randomFloat(2),
+            'price' => fake()->randomFloat(2, 1, 200),
             'images' => [
                 ['id' => 100],
                 ['id' => 100],
@@ -268,6 +267,7 @@ class ProductAdminApiTest extends TestCase
                         ->where('name', $product->name)
                         ->where('slug', $product->slug)
                         ->has('categories')
+                        ->has('media')
                         ->etc()
                 )
                     ->where('data.id', $product->id)

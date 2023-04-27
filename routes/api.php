@@ -34,6 +34,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     Route::put('customers/{id}/restore', [CustomerController::class, 'restore']);
     Route::put('orders/{id}/restore', [OrderController::class, 'restore']);
+    Route::delete('media/{id}', [ProductController::class, 'deleteMedia']);
 
     Route::apiResource('attachments', AttachmentController::class)
         ->only(['store', 'destroy']);

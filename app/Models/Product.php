@@ -19,7 +19,6 @@ class Product extends Model implements HasMedia
     public $guarded = [];
 
     protected $casts = [
-        'images' => 'array',
         'is_published' => 'boolean',
         'price' => 'decimal:2',
         'old_price' => 'decimal:2',

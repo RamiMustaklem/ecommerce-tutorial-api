@@ -22,7 +22,7 @@ class CustomerFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->unique()->e164PhoneNumber(),
-            'dob' => fake()->dateTimeBetween('-35 years', '-18 years'),
+            'dob' => fake()->dateTimeBetween('-35 years', '-18 years')->format('Y-m-d'),
             'gender' => fake()->randomElement(CustomerGender::getAllValues()),
             'email_verified_at' => now(),
             'password' => 'password',

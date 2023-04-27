@@ -32,7 +32,7 @@ class Customer extends Authenticatable
 
     public $casts = [
         'email_verified_at' => 'datetime',
-        'dob' => 'date',
+        'dob' => 'date:Y-m-d',
         'photo' => 'array',
         'gender' => CustomerGender::class,
     ];

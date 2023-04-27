@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Attachment;
 use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -25,7 +27,24 @@ class ProductController extends Controller
      */
     public function store(ProductCreateRequest $request)
     {
-        $product = Product::create($request->validated());
+        $product = DB::transaction(function () use ($request) {
+            $product = Product::create($request->validated());
+
+            if ($request->has('images')) {
+                // extract attachment id/s
+                $attachmentIds = $request->collect('images')->pluck('id');
+                // query all attachment models
+                // get each media item and
+                // perform media move from attachment to product
+                $attachments = Attachment::whereIn('id', $attachmentIds)
+                    ->each(function (Attachment $attachment) use ($product) {
+                        $mediaItem = $attachment->getMedia()->first();
+                        $movedMediaItem = $mediaItem->move($product);
+                    });
+            }
+
+            return $product;
+        });
 
         return new ProductResource($product);
     }

@@ -31,10 +31,8 @@ class ProductUpdateRequest extends FormRequest
             'quantity' => ['integer', 'min:0'],
             'price' => ['decimal:0,2', 'min:0'],
             'old_price' => ['decimal:0,2', 'min:0', 'lt:price'],
-            // 'images' => ['array:id,original,thumbnail'],
-            // 'images.id' => ['required', 'integer', 'exists:attachments,id'],
-            // 'images.original' => ['required', 'url', 'exists:attachments,id'],
-            // 'images.thumbnail' => ['required', 'url', 'exists:attachments,id'],
+            'images' => ['array'],
+            'images.*.id' => ['required', 'integer', 'exists:attachments,id', 'distinct'],
         ];
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\AttachmentController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\AttachmentController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,26 +20,41 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// /api/...
+Route::middleware(['auth:sanctum'])->group(function () {
 
-// /api/admin/...
-Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
-    Route::get('dashboard', DashboardController::class);
+    Route::prefix('store')->group(function () {
+        // profile
+        // my orders
+        // register
+        // login
+        // logout
+        // forgot password
+        // reset password
+        // verify email
+    });
 
-    Route::apiResources([
-        'products' => ProductController::class,
-        'categories' => CategoryController::class,
-        'customers' => CustomerController::class,
-        'orders' => OrderController::class,
-    ]);
+    // /api/admin/...
+    Route::prefix('admin')->group(function () {
 
-    Route::put('customers/{id}/restore', [CustomerController::class, 'restore']);
-    Route::put('orders/{id}/restore', [OrderController::class, 'restore']);
-    Route::delete('media/{id}', [ProductController::class, 'deleteMedia']);
+        Route::get('dashboard', DashboardController::class);
 
-    Route::apiResource('attachments', AttachmentController::class)
-        ->only(['store', 'destroy']);
+        Route::apiResources([
+            'products' => ProductController::class,
+            'categories' => CategoryController::class,
+            'customers' => CustomerController::class,
+            'orders' => OrderController::class,
+        ]);
+
+        Route::put('customers/{id}/restore', [CustomerController::class, 'restore']);
+        Route::put('orders/{id}/restore', [OrderController::class, 'restore']);
+        Route::delete('media/{id}', [ProductController::class, 'deleteMedia']);
+
+        Route::apiResource('attachments', AttachmentController::class)
+            ->only(['store', 'destroy']);
+    });
 });

@@ -25,6 +25,18 @@ class OrderAdminApiTest extends TestCase
         $this->actingAs($user);
     }
 
+    public function test_index_unauthorized_if_not_admin(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $this->assertAuthenticated();
+
+        $response = $this->getJson($this->baseUrl);
+
+        $response->assertUnauthorized();
+    }
+
     public function test_index(): void
     {
         $products = Product::factory()->count(rand(3, 5))->create();

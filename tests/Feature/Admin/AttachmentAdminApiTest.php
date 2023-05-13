@@ -23,6 +23,24 @@ class AttachmentAdminApiTest extends TestCase
         $this->actingAs($user);
     }
 
+    public function test_store_unauthorized_if_not_admin(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $this->assertAuthenticated();
+
+        Storage::fake('media');
+
+        $file = UploadedFile::fake()->image('image.jpg');
+
+        $response = $this->post($this->baseUrl, [
+            'image' => $file,
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
     public function test_store_successfully(): void
     {
         $this->assertAuthenticated();

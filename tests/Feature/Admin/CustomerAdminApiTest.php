@@ -23,6 +23,18 @@ class CustomerAdminApiTest extends TestCase
         $this->actingAs($user);
     }
 
+    public function test_index_unauthorized_if_not_admin(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $this->assertAuthenticated();
+
+        $response = $this->getJson($this->baseUrl);
+
+        $response->assertUnauthorized();
+    }
+
     public function test_index(): void
     {
         $customers = User::factory()->count(5)->create();

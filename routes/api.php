@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Middleware\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,7 +40,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     // /api/admin/...
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(Admin::class)->group(function () {
 
         Route::get('dashboard', DashboardController::class);
 

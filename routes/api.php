@@ -22,22 +22,21 @@ use Illuminate\Support\Facades\Route;
 */
 
 // /api/...
+
+Route::apiResource('products', App\Http\Controllers\ProductController::class)
+    ->only(['index', 'show']);
+Route::apiResource('categories', App\Http\Controllers\CategoryController::class)
+    ->only(['index', 'show']);
+
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    Route::prefix('store')->group(function () {
-        // profile
-        // my orders
-        // register
-        // login
-        // logout
-        // forgot password
-        // reset password
-        // verify email
-    });
+    // orders index/show - where customer_id == logged in user id
+    // cart
+    // checkout
 
     // /api/admin/...
     Route::prefix('admin')->middleware(Admin::class)->group(function () {

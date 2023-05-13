@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\CustomerGender;
-use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -38,12 +37,12 @@ class UpdateCustomerRequest extends FormRequest
             //     'confirmed',
             //     Rules\Password::defaults(),
             // ],
-            'phone' => [
-                'numeric',
-                Rule::unique('customers')->ignore($this->id),
-            ],
-            'gender' => [new Enum(CustomerGender::class)],
-            'dob' => ['date'],
+            // 'phone' => [
+            //     'numeric',
+            //     Rule::unique('customers')->ignore($this->id),
+            // ],
+            // 'gender' => [new Enum(CustomerGender::class)],
+            // 'dob' => ['date'],
         ];
     }
 }

@@ -14,12 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::factory(10)->create();
-
-        \App\Models\User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $customers = \App\Models\User::factory(20)->create();
 
         $products = \App\Models\Product::factory(20)->create();
         $categories = \App\Models\Category::factory(5)->create();
@@ -28,8 +23,6 @@ class DatabaseSeeder extends Seeder
             $randCategories = $categories->random(rand(0, 3))->pluck('id');
             $product->categories()->attach($randCategories);
         });
-
-        $customers = \App\Models\Customer::factory(50)->create();
 
         $orders = \App\Models\Order::factory(150)
             ->state(fn () => [
@@ -63,5 +56,10 @@ class DatabaseSeeder extends Seeder
 
             $order->update(['total_price' => $orderTotal]);
         });
+
+        \App\Models\User::factory()->admin()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }

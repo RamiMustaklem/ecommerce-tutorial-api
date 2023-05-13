@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\OrderStatus;
-use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -20,7 +20,7 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'customer_id' => Customer::factory(),
+            'customer_id' => User::factory(),
             'uuid' => Str::orderedUuid(),
             'total_price' => fake()->randomFloat(2, 50, 500),
             'status' => fake()->randomElement(OrderStatus::getAllValues()),

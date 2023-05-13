@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -22,7 +22,7 @@ class DashboardController extends Controller
             'unpublished' => $unpublished_products_count,
         ];
         $orders_count = Order::count();
-        $customers_count = Customer::count();
+        $customers_count = User::customer()->count();
 
         $outstanding_orders = Order::isNew()->select(['id', 'uuid', 'total_price'])->paginate();
 

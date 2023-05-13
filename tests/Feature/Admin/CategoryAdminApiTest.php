@@ -19,7 +19,7 @@ class CategoryAdminApiTest extends TestCase
     {
         parent::setUp();
 
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $this->actingAs($user);
     }
 

@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\CustomerGender;
-use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\Rules\Enum;
@@ -32,23 +32,23 @@ class StoreCustomerRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                'unique:' . Customer::class,
+                'unique:' . User::class,
             ],
             // 'password' => [
             //     'required',
             //     'confirmed',
             //     Rules\Password::defaults(),
             // ],
-            'phone' => [
-                'required',
-                'numeric',
-                'unique:' . Customer::class,
-            ],
-            'gender' => [
-                'required',
-                new Enum(CustomerGender::class),
-            ],
-            'dob' => ['required', 'date'],
+            // 'phone' => [
+            //     'required',
+            //     'numeric',
+            //     'unique:' . User::class,
+            // ],
+            // 'gender' => [
+            //     'required',
+            //     new Enum(CustomerGender::class),
+            // ],
+            // 'dob' => ['required', 'date'],
         ];
     }
 }

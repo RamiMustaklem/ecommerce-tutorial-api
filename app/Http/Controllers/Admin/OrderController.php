@@ -18,7 +18,7 @@ class OrderController extends Controller
     public function index()
     {
         return OrderResource::collection(
-            Order::with(['customer', 'products'])
+            Order::with(['customer:id,name,email', 'products'])
                 ->paginate()
         );
     }

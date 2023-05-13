@@ -18,10 +18,7 @@ class CustomerResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone,
-            'gender' => $this->gender,
-            'dob' => $this->dob,
-            'photo' => $this->whenNotNull($this->photo),
+            'role' => $this->whenNotNull($this->role),
             'orders' => OrderResource::collection(
                 $this->whenLoaded('orders')
             ),

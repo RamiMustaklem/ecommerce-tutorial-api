@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
-use App\Models\Customer;
+use App\Models\User;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -16,7 +17,10 @@ class CustomerController extends Controller
     public function index()
     {
         return CustomerResource::collection(
-            Customer::with('orders')->paginate()
+            User::select(['id', 'name', 'email'])
+                ->customer()
+                ->with('orders')
+                ->paginate()
         );
     }
 
@@ -25,7 +29,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        $customer = Customer::create($request->validated());
+        $customer = User::create([...$request->validated(), 'password' => Str::random(10)]);
 
         return new CustomerResource($customer);
     }
@@ -33,7 +37,7 @@ class CustomerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Customer $customer)
+    public function show(User $customer)
     {
         $customer->load('orders');
 
@@ -43,7 +47,7 @@ class CustomerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCustomerRequest $request, Customer $customer)
+    public function update(UpdateCustomerRequest $request, User $customer)
     {
         $customer->update($request->validated());
 
@@ -53,7 +57,7 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Customer $customer)
+    public function destroy(User $customer)
     {
         return $customer->delete();
     }
@@ -63,7 +67,7 @@ class CustomerController extends Controller
      */
     public function restore(int $id)
     {
-        $customer = Customer::withTrashed()->findOrFail($id);
+        $customer = User::withTrashed()->findOrFail($id);
         return $customer->restore();
     }
 }

@@ -19,7 +19,7 @@ class DashboardAdminApiTest extends TestCase
     {
         parent::setUp();
 
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $this->actingAs($user, 'sanctum');
     }
 
@@ -53,7 +53,7 @@ class DashboardAdminApiTest extends TestCase
         $published_products_count = DB::table('products')->where('is_published', true)->count();
         $unpublished_products_count = DB::table('products')->where('is_published', false)->count();
         $orders_count = DB::table('orders')->count();
-        $customers_count = DB::table('customers')->count();
+        $customers_count = DB::table('users')->where('role', 'customer')->count();
         $db_short_products_count = DB::table('products')->where('quantity', '<=', 5)->count();
         $db_outstanding_orders_count = DB::table('orders')->where('status', OrderStatus::NEW->value)->count();
 

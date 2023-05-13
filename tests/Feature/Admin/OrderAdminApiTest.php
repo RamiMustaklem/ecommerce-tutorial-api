@@ -3,7 +3,6 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\OrderStatus;
-use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -22,7 +21,7 @@ class OrderAdminApiTest extends TestCase
     {
         parent::setUp();
 
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $this->actingAs($user);
     }
 
@@ -67,7 +66,7 @@ class OrderAdminApiTest extends TestCase
 
         $order = $orders->first();
 
-        $customer = DB::table('customers')->find($order->customer_id);
+        $customer = DB::table('users')->find($order->customer_id);
 
         $order_products_pivot = DB::table('order_product')
             ->where('order_id', $order->id)
@@ -122,7 +121,7 @@ class OrderAdminApiTest extends TestCase
 
     public function test_store_successfully(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
 
         $products = Product::factory()->count(2)->create();
 
@@ -246,7 +245,7 @@ class OrderAdminApiTest extends TestCase
 
     public function test_update_successfully(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
 
         $products = Product::factory()->count(2)->create();
 

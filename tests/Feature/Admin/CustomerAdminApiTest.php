@@ -3,9 +3,9 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\CustomerGender;
-use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
@@ -19,19 +19,21 @@ class CustomerAdminApiTest extends TestCase
     {
         parent::setUp();
 
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $this->actingAs($user);
     }
 
     public function test_index(): void
     {
-        $customers = Customer::factory()->count(5)->create();
+        $customers = User::factory()->count(5)->create();
 
         $response = $this->getJson($this->baseUrl);
 
         $customer = $customers->first();
 
-        $this->assertEquals($customer->id, 1);
+        $first_db_customer_id = DB::table('users')->where('role', 'customer')->first()->id;
+
+        $this->assertEquals($customer->id, $first_db_customer_id);
         $this->assertCount(5, $customers);
 
         $response
@@ -51,10 +53,10 @@ class CustomerAdminApiTest extends TestCase
                         $json->where('id', $customer->id)
                             ->where('name', $customer->name)
                             ->where('email', $customer->email)
-                            ->where('phone', $customer->phone)
-                            ->where('gender', $customer->gender->value)
-                            ->where('dob', $customer->dob->toISOString())
-                            ->missing('photo')
+                            // ->where('phone', $customer->phone)
+                            // ->where('gender', $customer->gender->value)
+                            // ->where('dob', $customer->dob->toISOString())
+                            // ->missing('photo')
                             ->missing('password')
                             ->has('orders')
                     )
@@ -69,29 +71,28 @@ class CustomerAdminApiTest extends TestCase
         $customer = [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => $phone = str_replace('+', '', fake()->unique()->e164PhoneNumber()),
-            'dob' => fake()->dateTimeBetween('-35 years', '-18 years')->format('Y-m-d'),
-            'gender' => fake()->randomElement(CustomerGender::getAllValues()),
+            // 'phone' => $phone = str_replace('+', '', fake()->unique()->e164PhoneNumber()),
+            // 'dob' => fake()->dateTimeBetween('-35 years', '-18 years')->format('Y-m-d'),
+            // 'gender' => fake()->randomElement(CustomerGender::getAllValues()),
         ];
 
         $response = $this->postJson($this->baseUrl, $customer);
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('customers', $customer);
+        $this->assertDatabaseHas('users', $customer);
     }
 
     public function test_store_validation_errors(): void
     {
         $response = $this->postJson($this->baseUrl, [
-            'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => $phone = str_replace('+', '', fake()->unique()->e164PhoneNumber()),
-            'dob' => fake()->dateTimeBetween('-35 years', '-18 years')->format('Y-m-d'),
+            // 'phone' => $phone = str_replace('+', '', fake()->unique()->e164PhoneNumber()),
+            // 'dob' => fake()->dateTimeBetween('-35 years', '-18 years')->format('Y-m-d'),
         ]);
 
         $response->assertInvalid([
-            'gender' => 'The gender field is required.',
+            'name' => 'The name field is required.',
         ]);
 
         $response->assertUnprocessable();
@@ -99,7 +100,7 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_show(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
 
         $response = $this->getJson($this->baseUrl . '/' . $customer->id);
 
@@ -122,8 +123,6 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_show_404(): void
     {
-        $this->assertDatabaseEmpty('customers');
-
         $response = $this->getJson($this->baseUrl . '/' . 100);
 
         $response->assertNotFound();
@@ -131,22 +130,21 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_update_successfully(): void
     {
-        $customer = Customer::factory()->create(['name' => 'mock customer name']);
+        $customer = User::factory()->create(['name' => 'mock customer name']);
 
-        $this->assertDatabaseHas('customers', ['email' => $customer->email, 'name' => 'mock customer name']);
+        $this->assertDatabaseHas('users', ['email' => $customer->email, 'name' => 'mock customer name']);
 
         $response = $this->putJson($this->baseUrl . '/' . $customer->id, [
             'name' => 'mock customer name updated',
         ]);
 
-        $this->assertDatabaseHas('customers', ['email' => $customer->email, 'name' => 'mock customer name updated']);
+        $this->assertDatabaseHas('users', ['email' => $customer->email, 'name' => 'mock customer name updated']);
 
         $response
             ->assertJson(
                 fn (AssertableJson $json) =>
                 $json->has('data')
                     ->where('data.id', $customer->id)
-                    ->where('data.phone', $customer->phone)
                     ->where('data.email', $customer->email)
                     ->where('data.name', 'mock customer name updated')
             );
@@ -156,7 +154,7 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_update_validation_errors(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
 
         $response = $this->putJson($this->baseUrl . '/' . $customer->id, [
             'name' => null,
@@ -171,9 +169,9 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_destroy(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
 
-        $this->assertDatabaseHas('customers', [
+        $this->assertDatabaseHas('users', [
             'id' => $customer->id,
             'name' => $customer->name,
         ]);
@@ -182,12 +180,12 @@ class CustomerAdminApiTest extends TestCase
 
         $response->assertSuccessful();
 
-        $this->assertSoftDeleted('customers', [
+        $this->assertSoftDeleted('users', [
             'id' => $customer->id,
             'name' => $customer->name,
         ]);
 
-        $this->assertDatabaseHas('customers', [
+        $this->assertDatabaseHas('users', [
             'id' => $customer->id,
             'name' => $customer->name,
         ]);
@@ -196,8 +194,6 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_destroy_404(): void
     {
-        $this->assertDatabaseEmpty('customers');
-
         $response = $this->deleteJson($this->baseUrl . '/' . 100);
 
         $response->assertNotFound();
@@ -205,7 +201,7 @@ class CustomerAdminApiTest extends TestCase
 
     public function test_restore(): void
     {
-        $customer = Customer::factory()->create();
+        $customer = User::factory()->create();
         $customer->delete();
 
         $data = [
@@ -214,20 +210,18 @@ class CustomerAdminApiTest extends TestCase
         ];
 
         $this->assertModelExists($customer);
-        $this->assertDatabaseHas('customers', $data);
-        $this->assertSoftDeleted('customers', $data);
+        $this->assertDatabaseHas('users', $data);
+        $this->assertSoftDeleted('users', $data);
 
         $response = $this->putJson($this->baseUrl . '/' . $customer->id . '/restore');
 
         $response->assertSuccessful();
 
-        $this->assertNotSoftDeleted('customers', $data);
+        $this->assertNotSoftDeleted('users', $data);
     }
 
     public function test_restore_404(): void
     {
-        $this->assertDatabaseEmpty('customers');
-
         $response = $this->putJson($this->baseUrl . '/' . 100 . '/restore');
 
         $response->assertNotFound();

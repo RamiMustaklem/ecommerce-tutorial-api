@@ -19,7 +19,7 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->whenNotNull($this->description),
-            'images' => $this->whenNotNull($this->images),
+            'image' => $this->whenNotNull($this->image),
             'products' => ProductResource::collection($this->whenLoaded('products')),
         ];
     }

@@ -27,4 +27,14 @@ class ProductFactory extends Factory
             'old_price' => $price + ($price * 0.10),
         ];
     }
+
+    /**
+     * Indicate that the product is published or not.
+     */
+    public function published($published = true): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_published' => $published,
+        ]);
+    }
 }

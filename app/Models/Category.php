@@ -9,7 +9,7 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = ['slug', 'name', 'description', 'image'];
 
     protected $casts = [
         'image' => 'array',

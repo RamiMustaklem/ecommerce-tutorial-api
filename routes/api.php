@@ -28,13 +28,18 @@ Route::apiResource('products', App\Http\Controllers\ProductController::class)
 Route::apiResource('categories', App\Http\Controllers\CategoryController::class)
     ->only(['index', 'show']);
 
+// Route::get('/orders/{uuid}', [\App\Http\Controllers\OrderController::class, 'show']);
+// Route::apiResource('/orders', \App\Http\Controllers\OrderController::class)
+//     ->except(['destroy', 'update']);
+
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    // orders index/show - where customer_id == logged in user id
+    Route::apiResource('/orders', \App\Http\Controllers\OrderController::class)
+        ->except(['destroy', 'update']);
     // cart
     // checkout
 

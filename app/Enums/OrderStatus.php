@@ -14,4 +14,13 @@ enum OrderStatus: string
     {
         return array_column(OrderStatus::cases(), 'value');
     }
+
+    public static function getActiveValues(): array
+    {
+        return array_column([
+            OrderStatus::NEW,
+            OrderStatus::PROCESSING,
+            OrderStatus::SHIPPED,
+        ], 'value');
+    }
 }

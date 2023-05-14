@@ -23,7 +23,9 @@ class CategoryController extends Controller
     {
         $category->load([
             'products' => function ($query) {
-                $query->isPublished();
+                $query
+                    ->select(['slug', 'name', 'excerpt', 'description', 'quantity', 'price', 'old_price'])
+                    ->isPublished();
             }
         ]);
 

@@ -15,8 +15,8 @@ class OrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'customer_id' => $this->customer_id,
+            'id' => $this->whenNotNull($this->id),
+            'customer_id' => $this->whenNotNull($this->customer_id),
             'uuid' => $this->uuid,
             'total_price' => $this->total_price,
             'status' => $this->status,

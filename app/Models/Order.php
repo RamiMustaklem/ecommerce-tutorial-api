@@ -40,6 +40,16 @@ class Order extends Model
         $query->where('status', OrderStatus::NEW->value);
     }
 
+    public function scopeActive(Builder $query): void
+    {
+        $query->whereIn('status', OrderStatus::getActiveValues());
+    }
+
+    public function scopeCustomer(Builder $query): void
+    {
+        $query->where('customer_id', auth()->user()->id);
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');

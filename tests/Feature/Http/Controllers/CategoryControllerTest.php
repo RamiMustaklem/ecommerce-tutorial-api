@@ -38,7 +38,9 @@ class CategoryControllerTest extends TestCase
     public function test_successfully_get_single_category_by_id_without_authentication(): void
     {
         $category = Category::factory()->create();
-        $products = Product::factory(4)->create();
+        $unpublished_products = Product::factory(4)->published(false)->create();
+        $products = Product::factory(4)->published()->create();
+        $products->merge($unpublished_products);
         $category->products()->attach($products->pluck('id')->toArray());
         $published_products_count = $products->filter(fn ($product) => $product->is_published)->count();
 
@@ -66,14 +68,14 @@ class CategoryControllerTest extends TestCase
                                 ->each(
                                     fn (AssertableJson $json) =>
                                     $json
-                                        ->has('id')
+                                        ->missing('id')
                                         ->has('slug')
                                         ->has('name')
                                         ->has('description')
                                         ->has('quantity')
                                         ->has('price')
                                         ->has('old_price')
-                                        ->where('is_published', true)
+                                        ->missing('is_published')
                                         ->missing('categories')
                                 )
                         )

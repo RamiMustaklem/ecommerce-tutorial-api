@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
         return ProductResource::collection(
             Product::isPublished()
-                ->with('categories:id,slug,name', 'media')
+                ->with('categories:slug,name', 'media')
                 ->paginate()
         );
     }
@@ -28,7 +28,7 @@ class ProductController extends Controller
     {
         abort_if(!$product->is_published, Response::HTTP_NOT_FOUND, 'Product not found.');
 
-        $product->load('categories:id,slug,name', 'media');
+        $product->load('categories:slug,name', 'media');
 
         return new ProductResource($product);
     }

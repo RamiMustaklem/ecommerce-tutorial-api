@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CheckoutRequest extends FormRequest
@@ -11,7 +12,7 @@ class CheckoutRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->user()->role === UserRole::CUSTOMER;
     }
 
     /**
@@ -22,17 +23,15 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // total_price and order products should be taken from cart
-            'cart_id' => ['required', 'integer', 'exists:carts,id'],
             'notes' => ['string', 'max:255'],
             'address' => ['required', 'array:street_address,city'],
-            // 'order_products' => ['required', 'array', 'min:1', 'exclude'],
-            // 'order_products.*.product_id' => [
-            //     'required', 'integer', 'exists:products,id',
-            // ],
-            // 'order_products.*.quantity' => [
-            //     'required', 'integer', 'min:1',
-            // ],
+            'order_products' => ['required', 'array', 'min:1'],
+            'order_products.*.product_id' => [
+                'required', 'integer', 'exists:products,id',
+            ],
+            'order_products.*.quantity' => [
+                'required', 'integer', 'min:1',
+            ],
         ];
     }
 }

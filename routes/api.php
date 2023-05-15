@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResource('products', App\Http\Controllers\ProductController::class)
     ->only(['index', 'show']);
+
 Route::apiResource('categories', App\Http\Controllers\CategoryController::class)
     ->only(['index', 'show']);
 
@@ -34,9 +35,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    Route::get('/orders/{order:uuid}', [\App\Http\Controllers\OrderController::class, 'show']);
     Route::apiResource('/orders', \App\Http\Controllers\OrderController::class)
         ->except(['show', 'update', 'destroy']);
+    Route::get('/orders/{order:uuid}', [\App\Http\Controllers\OrderController::class, 'show']);
 
     // /api/admin/...
     Route::prefix('admin')->middleware(Admin::class)->group(function () {

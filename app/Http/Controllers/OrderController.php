@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CheckoutRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
@@ -33,8 +35,38 @@ class OrderController extends Controller
      */
     public function store(CheckoutRequest $request)
     {
-        // items should be taken from cart
-        // total_price should be calculated after
+        $order_products = $request->collect('order_products')
+            ->mapWithKeys(fn ($item) => [
+                $item['product_id'] => $item['quantity']
+            ])
+            ->toArray();
+
+        $products = Product::isPublished()
+            ->whereIn('id', array_keys($order_products))
+            ->get();
+
+        $pivot = $products->mapWithKeys(function ($product) use ($order_products) {
+            $quantity = $order_products[$product->id];
+            $unit_price = $product->price;
+            return [$product->id => compact('quantity', 'unit_price')];
+        });
+
+        $total_price = $pivot->reduce(
+            fn (?int $carry, $item) => $carry + ($item['quantity'] * $item['unit_price']),
+            0
+        );
+
+        return DB::transaction(function () use ($request, $pivot, $total_price) {
+            $order = Order::create([
+                ...$request->safe()->except('order_products'),
+                'customer_id' => auth()->id(),
+                'total_price' => $total_price,
+            ]);
+
+            $order->products()->attach($pivot);
+
+            return new OrderResource($order);
+        });
     }
 
     /**

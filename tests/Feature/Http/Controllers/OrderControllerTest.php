@@ -21,7 +21,7 @@ class OrderControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->customer()->create();
         $this->actingAs($this->user);
     }
 
@@ -172,5 +172,70 @@ class OrderControllerTest extends TestCase
         $response = $this->getJson($this->baseUrl . '/' . $order->id);
 
         $response->assertNotFound();
+    }
+
+    public function test_create_order_on_checkout_successfully_for_logged_in_user(): void
+    {
+        $products = Product::factory(rand(2, 5))->published()->create();
+
+        $order_products = $products->map(fn ($product) => [
+            'product_id' => $product->id,
+            'quantity' => rand(1, $product->quantity > 5 ? 5 : $product->quantity),
+        ]);
+
+        $pivot = $products->mapWithKeys(function ($product) use ($order_products) {
+            $quantity = $order_products->firstWhere('product_id', $product->id)['quantity'];
+            $unit_price = $product->price;
+            return [$product->id => compact('quantity', 'unit_price')];
+        });
+
+        $total_price = $pivot->reduce(
+            fn (?int $carry, $item) => $carry + ($item['quantity'] * $item['unit_price']),
+            0
+        );
+
+        $address = [
+            'street_address' => fake()->streetAddress,
+            'city' => fake()->city,
+        ];
+
+        $this->assertAuthenticated();
+
+        $response = $this->postJson($this->baseUrl, [
+            'address' => $address,
+            'order_products' => $order_products,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $this->user->id,
+            'total_price' => $total_price,
+            'status' => OrderStatus::NEW->value,
+        ]);
+    }
+
+    public function test_create_order_on_checkout_fails_validation_for_logged_in_user(): void
+    {
+        $address = [
+            'street_address' => fake()->streetAddress,
+            'city' => fake()->city,
+        ];
+
+        $this->assertAuthenticated();
+
+        $response = $this->postJson($this->baseUrl, [
+            'address' => $address,
+            'order_products' => [
+                ['product_id' => 100, 'quantity' => 0],
+            ],
+        ]);
+
+        $response->assertInvalid([
+            'order_products.0.product_id' => 'The selected order_products.0.product_id is invalid.',
+            'order_products.0.quantity' => 'The order_products.0.quantity field must be at least 1.',
+        ]);
+
+        $response->assertUnprocessable();
     }
 }

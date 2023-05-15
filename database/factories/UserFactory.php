@@ -38,6 +38,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is an customer.
+     */
+    public function customer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::CUSTOMER->value,
+        ]);
+    }
+
+    /**
      * Indicate that the user is an admin.
      */
     public function admin(): static

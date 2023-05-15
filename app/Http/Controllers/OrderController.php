@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckoutRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -30,18 +31,17 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CheckoutRequest $request)
     {
-        //
+        // items should be taken from cart
+        // total_price should be calculated after
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $uuid)
+    public function show(Order $order)
     {
-        $order = Order::where('uuid', $uuid)->firstOrFail();
-
         abort_if(auth()->user()->id !== $order->customer_id, Response::HTTP_NOT_FOUND, 'Order Not Found.');
 
         $order->load(['products' => function ($query) {
@@ -51,21 +51,5 @@ class OrderController extends Controller
         }]);
 
         return new OrderResource($order);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Order $order)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Order $order)
-    {
-        //
     }
 }

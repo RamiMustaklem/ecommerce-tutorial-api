@@ -238,4 +238,38 @@ class OrderControllerTest extends TestCase
 
         $response->assertUnprocessable();
     }
+
+    public function test_create_order_on_checkout_fails_for_product_quantity_for_logged_in_user(): void
+    {
+        $unpublished_product = Product::factory()
+            ->published(false)
+            ->state(['quantity' => 2])
+            ->create();
+        $published_product = Product::factory()
+            ->published()
+            ->state(['quantity' => 2])
+            ->create();
+        $products = collect([$unpublished_product, $published_product]);
+
+        $order_products = $products->map(fn ($product) => [
+            'product_id' => $product->id,
+            'quantity' => $product->quantity + 1,
+        ]);
+
+        $address = [
+            'street_address' => fake()->streetAddress,
+            'city' => fake()->city,
+        ];
+
+        $this->assertAuthenticated();
+
+        $response = $this->postJson($this->baseUrl, compact('address', 'order_products'));
+
+        $response->assertUnprocessable();
+
+        $response->assertInvalid([
+            'order_products.0.product_id' => "The selected product \"$unpublished_product->name\" is currently unavailable.",
+            'order_products.1.quantity' => "Insufficient remaining quantity for the selected product \"$published_product->name\". Only \"{$published_product->quantity}\" remaining.",
+        ]);
+    }
 }

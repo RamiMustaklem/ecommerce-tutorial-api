@@ -20,6 +20,8 @@ class Order extends Model
         'uuid', 'total_price', 'status', 'notes', 'customer_id', 'address',
     ];
 
+    protected $hidden = ['id'];
+
     public $casts = [
         'status' => OrderStatus::class,
         'total_price' => 'decimal:2',
@@ -47,7 +49,7 @@ class Order extends Model
 
     public function scopeCustomer(Builder $query): void
     {
-        $query->where('customer_id', auth()->user()->id);
+        $query->where('customer_id', auth()->id());
     }
 
     public function customer(): BelongsTo

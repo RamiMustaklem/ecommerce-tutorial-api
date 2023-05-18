@@ -56,7 +56,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        abort_if(auth()->user()->id !== $order->customer_id, Response::HTTP_NOT_FOUND, 'Order Not Found.');
+        abort_if(auth()->id() !== $order->customer_id, Response::HTTP_NOT_FOUND, 'Order Not Found.');
 
         $order->load(['products' => function ($query) {
             $query

@@ -35,9 +35,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    Route::apiResource('/orders', \App\Http\Controllers\OrderController::class)
-        ->except(['show', 'update', 'destroy']);
-    Route::get('/orders/{order:uuid}', [\App\Http\Controllers\OrderController::class, 'show']);
+    Route::middleware('verified')->group(function () {
+        Route::apiResource('/orders', \App\Http\Controllers\OrderController::class)
+            ->except(['show', 'update', 'destroy']);
+        Route::get('/orders/{order:uuid}', [\App\Http\Controllers\OrderController::class, 'show']);
+    });
 
     // /api/admin/...
     Route::prefix('admin')->middleware(Admin::class)->group(function () {

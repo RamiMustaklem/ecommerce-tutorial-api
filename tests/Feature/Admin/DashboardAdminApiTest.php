@@ -46,12 +46,10 @@ class DashboardAdminApiTest extends TestCase
         $response->assertJsonPath('orders_count', 0);
         $response->assertJsonPath('customers_count', 0);
         $response->assertJsonPath('short_products', []);
-        $response->assertJsonPath('outstanding_orders.current_page', 1);
-        $response->assertJsonPath('outstanding_orders.total', 0);
-        $response->assertJsonPath('outstanding_orders.data', []);
-        $response->assertJsonPath('popular_products.current_page', 1);
-        $response->assertJsonPath('popular_products.total', 0);
-        $response->assertJsonPath('popular_products.data', []);
+        $response->assertJsonPath('outstanding_orders', []);
+        $response->assertJsonCount(0, 'outstanding_orders');
+        $response->assertJsonCount(0, 'popular_products');
+        $response->assertJsonPath('popular_products', []);
     }
 
     public function test_data_return_successfully(): void
@@ -79,11 +77,8 @@ class DashboardAdminApiTest extends TestCase
         $response->assertJsonPath('orders_count', $orders_count);
         $response->assertJsonPath('customers_count', $customers_count);
         $response->assertJsonCount($db_short_products_count, 'short_products');
-        $response->assertJsonPath('outstanding_orders.current_page', 1);
-        $response->assertJsonPath('outstanding_orders.total', $db_outstanding_orders_count);
-        $response->assertJsonCount($db_outstanding_orders_count > 15 ? 15 : $db_outstanding_orders_count, 'outstanding_orders.data');
-        $response->assertJsonPath('popular_products.current_page', 1);
-        $response->assertJsonPath('popular_products.total', $popular_products->count());
-        $response->assertJsonPath('popular_products.data', $popular_products->toArray());
+        $response->assertJsonCount($db_outstanding_orders_count > 10 ? 10 : $db_outstanding_orders_count, 'outstanding_orders');
+        $response->assertJsonCount($popular_products->count() > 10 ? 10 : $popular_products->count(), 'popular_products');
+        $response->assertJsonPath('popular_products', $popular_products->toArray());
     }
 }

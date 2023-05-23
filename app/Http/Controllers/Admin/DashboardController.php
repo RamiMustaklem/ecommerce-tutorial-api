@@ -24,16 +24,22 @@ class DashboardController extends Controller
         $orders_count = Order::count();
         $customers_count = User::customer()->count();
 
-        $outstanding_orders = Order::isNew()->select(['id', 'uuid', 'total_price'])->paginate();
+        $outstanding_orders = Order::isNew()
+            ->latest()
+            ->select(['id', 'uuid', 'total_price'])
+            ->take(10)
+            ->get();
 
         // TODO: return total quantity of sold products with the list - total order quantity where order status = delivered
         $popular_products = Product::isPublished()
             ->has('orders', '>=', 5)
             ->select(['id', 'name', 'slug', 'quantity', 'price', 'old_price'])
-            ->paginate();
+            ->take(10)
+            ->get();
 
         $short_products = Product::where('quantity', '<=', 5)
             ->select(['id', 'name', 'slug', 'quantity', 'price', 'old_price', 'is_published'])
+            ->take(10)
             ->get();
 
         return response()->json(

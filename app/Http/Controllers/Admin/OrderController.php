@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Events\OrderShipped;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
@@ -107,6 +109,13 @@ class OrderController extends Controller
 
             $order->products()->sync($orderProducts->toArray());
         });
+
+        OrderShipped::dispatchIf(
+            $request->has('status') &&
+                $request->input('status') == OrderStatus::SHIPPED->value &&
+                $order->status == OrderStatus::SHIPPED,
+            $order
+        );
 
         return new OrderResource($order);
     }

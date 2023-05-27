@@ -18,7 +18,7 @@ class OrderResource extends JsonResource
             'id' => $this->whenNotNull($this->id),
             'customer_id' => $this->whenNotNull($this->customer_id),
             'uuid' => $this->uuid,
-            'total_price' => $this->total_price,
+            'total_price' => number_format($this->total_price, 2),
             'status' => $this->status,
             'notes' => $this->whenNotNull($this->notes),
             'address' => $this->address,

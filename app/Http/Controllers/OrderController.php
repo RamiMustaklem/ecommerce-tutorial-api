@@ -80,7 +80,7 @@ class OrderController extends Controller
 
         $admin = User::admin()->first();
 
-        Notification::sendNow(collect([$customer, $admin]), new OrderCreated($order));
+        Notification::sendNow([$customer, $admin], new OrderCreated($order));
     }
 
     private function validateAndGenerateOrderProductPivotWithTotalPrice($request): array

@@ -3,11 +3,16 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderShipped;
+use App\Listeners\SendOrderShippedNotification;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\OrderShipped as OrderShippedNotification;
 use DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
@@ -257,6 +262,9 @@ class OrderAdminApiTest extends TestCase
 
     public function test_update_successfully(): void
     {
+        Notification::fake();
+        Event::fake();
+
         $customer = User::factory()->create();
 
         $products = Product::factory()->count(2)->create();
@@ -294,7 +302,7 @@ class OrderAdminApiTest extends TestCase
             'status' => OrderStatus::PROCESSING->value,
             'notes' => 'notes updated',
             'customer_id' => $customer->id,
-            'total_price' => $total_price,
+            'total_price' => number_format($total_price, 2),
         ]);
 
         $response
@@ -314,6 +322,50 @@ class OrderAdminApiTest extends TestCase
             );
 
         $response->assertOk();
+
+        Event::assertNotDispatched(OrderShipped::class);
+        Notification::assertNothingSentTo($customer);
+    }
+
+    public function test_update_status_to_shipped_successfully_with_event_dispatch(): void
+    {
+        Event::fake();
+        Notification::fake();
+
+        $products = Product::factory()->count(2)->create();
+
+        $order_products = $products->map(
+            fn ($product) => ['quantity' => 1, 'product_id' => $product->id]
+        )->toArray();
+
+        $order = Order::factory()->create([
+            'status' => OrderStatus::NEW->value,
+        ]);
+
+        $response = $this->putJson($this->baseUrl . '/' . $order->id, [
+            'status' => OrderStatus::SHIPPED->value,
+            'order_products' => $order_products,
+        ]);
+
+        $response
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->has(
+                    'data',
+                    fn (AssertableJson $json) =>
+                    $json->where('id', $order->id)
+                        ->where('customer_id', $order->customer_id)
+                        ->where('uuid', $order->uuid)
+                        ->where('status', OrderStatus::SHIPPED->value)
+                        ->missing('customer')
+                        ->etc()
+                )
+            );
+
+        $response->assertOk();
+
+        Event::assertDispatchedTimes(OrderShipped::class, 1);
+        Event::assertListening(OrderShipped::class, SendOrderShippedNotification::class);
     }
 
     public function test_update_validation_errors(): void

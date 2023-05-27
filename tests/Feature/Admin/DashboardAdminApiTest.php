@@ -70,6 +70,7 @@ class DashboardAdminApiTest extends TestCase
         $popular_products = Product::isPublished()
             ->has('orders', '>=', 5)
             ->select(['id', 'name', 'slug', 'quantity', 'price', 'old_price'])
+            ->take(10)
             ->get();
 
         $response->assertJsonPath('products_count.published', $published_products_count);

@@ -6,8 +6,11 @@ use App\Http\Requests\CheckoutRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
+use App\Notifications\OrderCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -38,7 +41,7 @@ class OrderController extends Controller
     {
         [$pivot, $total_price] = $this->validateAndGenerateOrderProductPivotWithTotalPrice($request);
 
-        return DB::transaction(function () use ($request, $pivot, $total_price) {
+        $order = DB::transaction(function () use ($request, $pivot, $total_price) {
             $order = Order::create([
                 ...$request->safe()->except('order_products'),
                 'customer_id' => auth()->id(),
@@ -47,8 +50,12 @@ class OrderController extends Controller
 
             $order->products()->attach($pivot);
 
-            return new OrderResource($order);
+            return $order;
         });
+
+        $this->notifyCustomerAndAdmin($request, $order);
+
+        return new OrderResource($order);
     }
 
     /**
@@ -65,6 +72,15 @@ class OrderController extends Controller
         }]);
 
         return new OrderResource($order);
+    }
+
+    private function notifyCustomerAndAdmin(Request $request, Order $order)
+    {
+        $customer = $request->user();
+
+        $admin = User::admin()->first();
+
+        Notification::sendNow(collect([$customer, $admin]), new OrderCreated($order));
     }
 
     private function validateAndGenerateOrderProductPivotWithTotalPrice($request): array

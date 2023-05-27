@@ -66,6 +66,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $query->where('role', UserRole::CUSTOMER->value);
     }
 
+    public function scopeAdmin(Builder $query): void
+    {
+        $query->where('role', UserRole::ADMIN->value);
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'customer_id');

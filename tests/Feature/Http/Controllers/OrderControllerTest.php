@@ -6,7 +6,9 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\OrderCreated;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
@@ -176,7 +178,11 @@ class OrderControllerTest extends TestCase
 
     public function test_create_order_on_checkout_successfully_for_logged_in_user(): void
     {
+        Notification::fake();
+
         $products = Product::factory(rand(2, 5))->published()->create();
+
+        $admin = User::factory()->admin()->create();
 
         $order_products = $products->map(fn ($product) => [
             'product_id' => $product->id,
@@ -213,10 +219,19 @@ class OrderControllerTest extends TestCase
             'total_price' => $total_price,
             'status' => OrderStatus::NEW->value,
         ]);
+
+        Notification::assertSentTo(
+            [$this->user, $admin],
+            OrderCreated::class
+        );
+
+        Notification::assertCount(2);
     }
 
     public function test_create_order_on_checkout_fails_validation_for_logged_in_user(): void
     {
+        Notification::fake();
+
         $address = [
             'street_address' => fake()->streetAddress,
             'city' => fake()->city,
@@ -237,10 +252,14 @@ class OrderControllerTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
+
+        Notification::assertNothingSent();
     }
 
     public function test_create_order_on_checkout_fails_for_product_quantity_for_logged_in_user(): void
     {
+        Notification::fake();
+
         $unpublished_product = Product::factory()
             ->published(false)
             ->state(['quantity' => 2])
@@ -271,5 +290,7 @@ class OrderControllerTest extends TestCase
             'order_products.0.product_id' => "The selected product \"$unpublished_product->name\" is currently unavailable.",
             'order_products.1.quantity' => "Insufficient remaining quantity for the selected product \"$published_product->name\". Only \"{$published_product->quantity}\" remaining.",
         ]);
+
+        Notification::assertNothingSent();
     }
 }
